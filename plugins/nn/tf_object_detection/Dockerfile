@@ -2,6 +2,8 @@ FROM supervisely/base-tensorflow:6.0.11
 
 COPY . /workdir
 
+RUN pip install -e git+https://github.com/supervisely/supervisely.git@f165787553593218ee27072d6d646f30c9d806db#egg=supervisely_lib&subdirectory=supervisely_lib
+
 RUN apt update && apt install unzip
 
 RUN git clone https://github.com/tensorflow/models.git /workdir/src/models && cd /workdir/src/models && git checkout fe748d4a4a1576b57c279014ac0ceb47344399c4
