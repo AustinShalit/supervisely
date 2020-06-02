@@ -18,8 +18,8 @@ COPY requirements.txt /tmp/
 
 RUN pip install -r /tmp/requirements.txt
 
-COPY /wpilib-supervisely-nn-tf-obj-det /tensorflow/models/research/wpilib-supervisely-nn-tf-obj-det/
-
 ENV PYTHONPATH $PYTHONPATH:/tensorflow/models/research:/tensorflow/models/research/slim
 
-WORKDIR /tensorflow/models/research
+COPY . /workdir
+
+WORKDIR /workdir/src
