@@ -1,7 +1,15 @@
 FROM tensorflow/tensorflow:1.15.0-gpu-py3
 
-RUN apt-get update && \
-    apt-get install -y git
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        libgeos-dev \
+        libsm6 \
+        libxext6 \
+        libxrender-dev \
+    && apt-get -qq -y autoremove \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/* /var/log/dpkg.log
 
 RUN curl -s -OL "https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip" > /dev/null && \
     unzip protoc-3.0.0-linux-x86_64.zip -d proto3 > /dev/null && \
