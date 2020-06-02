@@ -9,7 +9,7 @@ RUN curl -s -OL "https://github.com/google/protobuf/releases/download/v3.0.0/pro
     mv proto3/include/* /usr/local/include && \
     rm -rf proto3 protoc-3.0.0-linux-x86_64.zip
 
-RUN git clone https://github.com/tensorflow/models.git /tensorflow/models
+RUN git clone --depth=1 https://github.com/tensorflow/models.git /tensorflow/models
 
 RUN cd /tensorflow/models/research && \
     protoc object_detection/protos/*.proto --python_out=.
