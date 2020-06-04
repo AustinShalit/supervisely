@@ -20,7 +20,7 @@ RUN wget "https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0
     rm -rf proto3 protoc-3.0.0-linux-x86_64.zip
 
 RUN git clone https://github.com/tensorflow/models.git /tensorflow/models && \
-  git -C /tensorflow/models checkout f788046ca876a8820e05b0b48c1fc2e16b0955bc
+  git -C /tensorflow/models checkout fe748d4a4a1576b57c279014ac0ceb47344399c4
 
 RUN cd /tensorflow/models/research && \
     protoc object_detection/protos/*.proto --python_out=.
