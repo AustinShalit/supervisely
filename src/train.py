@@ -19,7 +19,7 @@ from supervisely_lib.nn.hosted.trainer import SuperviselyModelTrainer
 from tf_config_converter import load_sample_config, save_config, determine_tf_config
 
 import config as config_lib
-import custom_train as train
+import custom_train
 
 
 class ObjectDetectionTrainer(SuperviselyModelTrainer):
@@ -196,7 +196,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             self.sess = sess
             self._save_model_snapshot(is_best, opt_data)
 
-        train(self.tf_data_dicts,
+        custom_train.train(self.tf_data_dicts,
               self.config['epochs'],
               self.config['val_every'],
               self.iters_cnt,
