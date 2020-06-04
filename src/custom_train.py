@@ -1,5 +1,4 @@
-from object_detection.builders import model_builder
-from object_detection.utils import dataset_util
+from object_detection.builders import model_builder, dataset_builder
 from dataset_tools import build_dataset
 
 import functools
@@ -272,7 +271,7 @@ def train(datasets_dicts,
     detection_model = create_model_fn()
 
     def get_next(dataset):
-        return dataset_util.make_initializable_iterator(
+        return dataset_builder.make_initializable_iterator(
             build_dataset(dataset)).get_next()
 
     create_tensor_dict_fn = functools.partial(get_next, datasets_dicts['train'])
