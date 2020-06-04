@@ -209,7 +209,9 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
 
 
 def main():
+    logger.info('Starting train.py')
     cv2.setNumThreads(0)
+    logger.info('Creating ObjectDetectionTrainer')
     x = ObjectDetectionTrainer()  # load model & prepare all
     x.train()
 
