@@ -178,7 +178,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
                                           self.config['lr'],
                                           checkpoint)
 
-        logger.info('Model config created.', extra=str(self.tf_config))
+        logger.info('Model config created.')
 
     def _dump_model_weights(self, out_dir):
         save_config(osp.join(out_dir, 'model.config'), self.tf_config)
