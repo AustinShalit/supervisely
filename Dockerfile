@@ -27,7 +27,7 @@ RUN cd /tensorflow/models/research && \
 
 COPY requirements.txt /tmp/
 
-RUN pip install -r /tmp/requirements.txt
+RUN pip install --upgrade pip && pip install -r /tmp/requirements.txt
 
 ENV PYTHONPATH $PYTHONPATH:/tensorflow/models/research:/tensorflow/models/research/slim
 
