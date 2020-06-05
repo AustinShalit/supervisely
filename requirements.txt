@@ -1,6 +1,6 @@
 git+https://github.com/supervisely/supervisely.git@f165787553593218ee27072d6d646f30c9d806db#egg=supervisely
 opencv-python~=3.4.9.33
-numpy~=1.18.3
+numpy~=1.18.5
 tensorflow~=1.15.3
 pandas~=1.0.3
 matplotlib~=2.2.5
