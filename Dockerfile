@@ -33,11 +33,13 @@ RUN git clone https://github.com/tensorflow/models.git /tensorflow/models && \
 RUN cd /tensorflow/models/research && \
     protoc object_detection/protos/*.proto --python_out=.
 
+ENV PYTHONPATH $PYTHONPATH:/tensorflow/models/research:/tensorflow/models/research/slim
+
+ENV LANG C.UTF-8
+
 COPY requirements.txt /tmp/
 
 RUN pip install --upgrade pip && pip install -r /tmp/requirements.txt
-
-ENV PYTHONPATH $PYTHONPATH:/tensorflow/models/research:/tensorflow/models/research/slim
 
 COPY . /workdir
 
