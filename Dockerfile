@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.15.2
+FROM tensorflow/tensorflow:1.12.3
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
