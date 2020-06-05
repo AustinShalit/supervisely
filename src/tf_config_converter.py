@@ -27,7 +27,7 @@ def remake_ssd_config(config, train_input, train_steps, n_classes, size, batch_s
     config.model.ssd.image_resizer.fixed_shape_resizer.width = size[1]
 
     config.train_config.batch_size = batch_size
-    config.train_config.optimizer.adam_optimizer.learning_rate.constant_learning_rate.learning_rate = lr
+    # config.train_config.optimizer.adam_optimizer.learning_rate.constant_learning_rate.learning_rate = lr
     config.train_config.num_steps = train_steps
     if checkpoint:
         config.train_config.fine_tune_checkpoint = checkpoint
