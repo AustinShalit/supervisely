@@ -5,10 +5,12 @@ import functools
 
 import tensorflow as tf
 
+from object_detection.builders import graph_rewriter_builder
 from object_detection.builders import optimizer_builder
 from object_detection.builders import preprocessor_builder
 from object_detection.core import batcher
 from object_detection.core import preprocessor
+from object_detection.utils import config_util
 from object_detection.utils import ops as util_ops
 from object_detection.utils import variables_helper
 from deployment import model_deploy
@@ -221,17 +223,6 @@ def _create_losses_val(input_queue, create_model_fn, train_config):
     return losses
 
 
-def configs_from_pipeline(pipeline_config):
-    configs = {}
-    configs["model"] = pipeline_config.model
-    configs["train_config"] = pipeline_config.train_config
-    configs["train_input_config"] = pipeline_config.train_input_reader
-    configs["eval_config"] = pipeline_config.eval_config
-    configs["eval_input_config"] = pipeline_config.eval_input_reader
-
-    return configs
-
-
 def get_val_loss(num_clones, input_queue, create_model_fn, train_config):
     losses_val = []
     # with tf.name_scope("Valid"):
@@ -259,10 +250,15 @@ def train(datasets_dicts,
           save_cback=None,
           is_transfer_learning=False):
     logger.info('Start train')
-    configs = configs_from_pipeline(pipeline_config)
+    configs = config_util.create_configs_from_pipeline_proto(pipeline_config)
 
     model_config = configs['model']
     train_config = configs['train_config']
+
+    graph_rewriter_fn = None
+    if 'graph_rewriter_config' in configs:
+        graph_rewriter_fn = graph_rewriter_builder.build(
+            configs['graph_rewriter_config'], is_training=True)
 
     create_model_fn = functools.partial(
         model_builder.build,
@@ -339,6 +335,10 @@ def train(datasets_dicts,
                                 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
         val_total_loss = get_val_loss(num_clones, input_queue_val, create_model_fn_val, train_config)
+
+        if graph_rewriter_fn:
+            with tf.device(deploy_config.variables_device()):
+                graph_rewriter_fn()
 
         with tf.device(deploy_config.optimizer_device()):
             total_loss = tf.add_n(train_losses)
