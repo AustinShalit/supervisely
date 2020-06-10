@@ -4,6 +4,7 @@ from dataset_tools import build_dataset
 import functools
 
 import tensorflow as tf
+import tensorflow_model_optimization as tfmot
 
 from object_detection.builders import optimizer_builder
 from object_detection.builders import preprocessor_builder
@@ -268,7 +269,7 @@ def train(datasets_dicts,
         model_builder.build,
         model_config=model_config,
         is_training=True)
-    detection_model = create_model_fn()
+    detection_model = tfmot.quantization.keras.quantize_model(create_model_fn())
 
     def get_next(dataset):
         return dataset_builder.make_initializable_iterator(

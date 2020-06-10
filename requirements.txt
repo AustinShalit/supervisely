@@ -4,3 +4,4 @@ numpy~=1.18.5
 tensorflow~=1.15.3
 pandas~=1.0.3
 matplotlib~=2.2.5
+tensorflow-model-optimization~=0.3.0
