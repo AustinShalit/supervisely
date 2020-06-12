@@ -10,9 +10,9 @@ RUN apt-get update \
         libxext6 \
         libxrender-dev \
         protobuf-compiler \
-        python-pil \
-        python-lxml \
-        python-tk \
+        python3-pil \
+        python3-lxml \
+        python3-tk \
         unzip \
         wget \
     && apt-get -qq -y autoremove \
