@@ -1,5 +1,7 @@
 FROM tensorflow/tensorflow:1.15.2
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \
@@ -8,6 +10,9 @@ RUN apt-get update \
         libxext6 \
         libxrender-dev \
         protobuf-compiler \
+        python-pil \
+        python-lxml \
+        python-tk \
         unzip \
         wget \
     && apt-get -qq -y autoremove \
