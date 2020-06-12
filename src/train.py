@@ -198,6 +198,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             predict_input_fn,
             train_steps)
 
+        logger.info('Calling tf.estimator.train_and_evaluate')
         tf.estimator.train_and_evaluate(estimator, train_spec, eval_specs[0])
 
         # custom_train.train(self.tf_data_dicts,
