@@ -19,7 +19,11 @@ from supervisely_lib.nn.hosted.trainer import SuperviselyModelTrainer
 from tf_config_converter import load_sample_config, save_config, determine_tf_config
 
 import config as config_lib
-import custom_train
+
+import tensorflow as tf
+
+from object_detection import model_hparams
+from object_detection import model_lib
 
 
 class ObjectDetectionTrainer(SuperviselyModelTrainer):
@@ -49,9 +53,6 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
     def __init__(self):
         super().__init__(default_config=ObjectDetectionTrainer.get_default_config())
         logger.info('Model is ready to train.')
-        # To be filled in by dump_model() callback inside train().
-        self.saver = None
-        self.sess = None
 
     @property
     def class_title_to_idx_key(self):
@@ -70,18 +71,12 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
 
     @staticmethod
     def _determine_architecture_model_configuration(model_config_fpath):
-
         if not sly.fs.file_exists(model_config_fpath):
             raise RuntimeError('Unable to start training, model does not contain config.')
 
         with open(model_config_fpath) as fin:
             model_config = json.load(fin)
 
-        # The old version of this code stored model_configuration inside the training config. For backwards
-        # compatibility we accept both locations. If both are present, make sure they are consistent.
-        # still accept that field in the input, but clear it before writing out the config in a new
-        # format. Also, if model_configuration is present in the training config, make sure it is consistent with the
-        # values coming from the model itself.
         model_configuration_model_root = model_config.get('model_configuration', None)
         model_configuration_model_subfield = model_config.get(SETTINGS, {}).get('model_configuration', None)
         if model_configuration_model_root is None and model_configuration_model_subfield is None:
@@ -99,22 +94,6 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
     def _determine_model_configuration(self):
         self.model_configuration = ObjectDetectionTrainer._determine_architecture_model_configuration(
             sly.TaskPaths.MODEL_CONFIG_PATH)
-
-        # Check for possible model_configuration field in old-style config. If exists, make sure it is consistent with
-        # the actual model config and clear model_configuration from training config before writing new-style model
-        # config.
-        training_model_configuration = self.config.get('model_configuration', None)
-        if training_model_configuration is not None:
-            if training_model_configuration != self.model_configuration:
-                error_msg = (
-                        'Unable to start training. model_confguration in the training config is not consistent with ' +
-                        'selected model architecture. Make sure you have selected the right model plugin and remove ' +
-                        'model_confguration from the training config as it is not required anymore.')
-                logger.critical(error_msg,
-                                extra={'training_model_configuration': self.config['model_configuration'],
-                                       'model_configuration': self.model_configuration})
-                raise RuntimeError(error_msg)
-            del self.config['model_configuration']
 
     def _determine_out_config(self):
         super()._determine_out_config()
@@ -170,41 +149,66 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             logger.info('Weights will be loaded from previous train.')
 
         self.tf_config = remake_config_fn(tf_config,
-                                          'SUPERVISELY_FORMAT',
                                           total_steps,
                                           max(self.class_title_to_idx.values()),
                                           input_size,
                                           self.config['batch_size']['train'],
-                                          self.config['lr'],
                                           checkpoint)
 
         logger.info('Model config created.', extra={'tf_config': self.tf_config})
 
     def _dump_model_weights(self, out_dir):
         save_config(osp.join(out_dir, 'model.config'), self.tf_config)
-        model_fpath = os.path.join(out_dir, 'model_weights', 'model.ckpt')
-        self.saver.save(self.sess, model_fpath)
+        # model_fpath = os.path.join(out_dir, 'model_weights', 'model.ckpt')
+        # self.saver.save(self.sess, model_fpath)
 
     def train(self):
-        device_ids = sly.env.remap_gpu_devices(self.config['gpu_devices'])
+        # device_ids = sly.env.remap_gpu_devices(self.config['gpu_devices'])
 
         progress_dummy = sly.Progress('Building model:', 1)
         progress_dummy.iter_done_report()
 
-        def dump_model(saver, sess, is_best, opt_data):
-            self.saver = saver
-            self.sess = sess
-            self._save_model_snapshot(is_best, opt_data)
+        # def dump_model(saver, sess, is_best, opt_data):
+        #     self.saver = saver
+        #     self.sess = sess
+        #     self._save_model_snapshot(is_best, opt_data)
 
-        custom_train.train(self.tf_data_dicts,
-              self.config['epochs'],
-              self.config['val_every'],
-              self.iters_cnt,
-              self.config['validate_with_model_eval'],
-              pipeline_config=self.tf_config,
-              num_clones=len(device_ids),
-              save_cback=dump_model,
-              is_transfer_learning=(self.config['weights_init_type'] == 'transfer_learning'))
+        config = tf.estimator.RunConfig(model_dir=sly.TaskPaths.MODEL_DIR)
+
+        tf_model_config_path = osp.join(sly.TaskPaths.TASK_DIR, 'model.config')
+        save_config(tf_model_config_path, self.tf_config)
+
+        train_and_eval_dict = model_lib.create_estimator_and_inputs(
+            run_config=config,
+            hparams=model_hparams.create_hparams(),
+            pipeline_config_path=tf_model_config_path,
+            sample_1_of_n_eval_examples=1,
+            sample_1_of_n_eval_on_train_examples=5)
+        estimator = train_and_eval_dict['estimator']
+        train_input_fn = train_and_eval_dict['train_input_fn']
+        eval_input_fns = train_and_eval_dict['eval_input_fns']
+        eval_on_train_input_fn = train_and_eval_dict['eval_on_train_input_fn']
+        predict_input_fn = train_and_eval_dict['predict_input_fn']
+        train_steps = train_and_eval_dict['train_steps']
+
+        train_spec, eval_specs = model_lib.create_train_and_eval_specs(
+            train_input_fn,
+            eval_input_fns,
+            eval_on_train_input_fn,
+            predict_input_fn,
+            train_steps)
+
+        tf.estimator.train_and_evaluate(estimator, train_spec, eval_specs[0])
+
+        # custom_train.train(self.tf_data_dicts,
+        #       self.config['epochs'],
+        #       self.config['val_every'],
+        #       self.iters_cnt,
+        #       self.config['validate_with_model_eval'],
+        #       pipeline_config=self.tf_config,
+        #       num_clones=len(device_ids),
+        #       save_cback=dump_model,
+        #       is_transfer_learning=(self.config['weights_init_type'] == 'transfer_learning'))
 
 
 def main():
