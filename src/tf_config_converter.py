@@ -30,7 +30,7 @@ def remake_ssd_config(config, train_steps, n_classes, size, batch_size, label_ma
     config.train_config.num_steps = train_steps
 
     config.train_input_reader.label_map_path = label_map_path
-    config.eval_input_reader.label_map_path = label_map_path
+    # config.eval_input_reader.label_map_path = label_map_path
 
     if checkpoint:
         config.train_config.fine_tune_checkpoint = checkpoint
