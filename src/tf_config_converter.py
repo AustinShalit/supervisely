@@ -20,7 +20,7 @@ def default(d, key, value):
     return value if not key in d else d[key]
 
 
-def remake_ssd_config(config, train_steps, n_classes, size, batch_size, checkpoint=None):
+def remake_ssd_config(config, train_steps, n_classes, size, batch_size, label_map_path, checkpoint=None):
     config.model.ssd.num_classes = n_classes
 
     config.model.ssd.image_resizer.fixed_shape_resizer.height = size[0]
@@ -28,6 +28,9 @@ def remake_ssd_config(config, train_steps, n_classes, size, batch_size, checkpoi
 
     config.train_config.batch_size = batch_size
     config.train_config.num_steps = train_steps
+
+    config.train_input_reader.label_map_path = label_map_path
+    config.eval_input_reader.label_map_path = label_map_path
 
     if checkpoint:
         config.train_config.fine_tune_checkpoint = checkpoint

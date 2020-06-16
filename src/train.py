@@ -25,7 +25,7 @@ import tensorflow as tf
 from object_detection import model_hparams
 from object_detection import model_lib
 
-LABEL_MAP = os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt')
+LABEL_MAP_PATH = os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt')
 
 
 class ObjectDetectionTrainer(SuperviselyModelTrainer):
@@ -77,7 +77,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             label_map += f"item {{\n\tid: {i}\n\tname: \"{label}\"\n}}\n\n"
 
         logger.info('Saving label map', extra={'label_map': label_map})
-        with open(LABEL_MAP, 'w+') as pbtxt:
+        with open(LABEL_MAP_PATH, 'w+') as pbtxt:
             pbtxt.write(label_map)
 
     @staticmethod
@@ -164,6 +164,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
                                           max(self.class_title_to_idx.values()),
                                           input_size,
                                           self.config['batch_size']['train'],
+                                          LABEL_MAP_PATH,
                                           checkpoint)
 
         logger.info('Model config created.', extra={'tf_config': self.tf_config})
