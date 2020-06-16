@@ -25,6 +25,8 @@ import tensorflow as tf
 from object_detection import model_hparams
 from object_detection import model_lib
 
+LABEL_MAP = os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt')
+
 
 class ObjectDetectionTrainer(SuperviselyModelTrainer):
     @staticmethod
@@ -72,10 +74,10 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
         # We now have the pbtxt information so we can save it to file
         label_map = ''
         for label, i in self.class_title_to_idx.items():
-            label_map += f"item {{\n\tid: {i + 1}\n\tname: \"{label}\"\n}}\n\n"
+            label_map += f"item {{\n\tid: {i}\n\tname: \"{label}\"\n}}\n\n"
 
         logger.info('Saving label map', extra={'label_map': label_map})
-        with open(os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt'), 'w+') as pbtxt:
+        with open(LABEL_MAP, 'w+') as pbtxt:
             pbtxt.write(label_map)
 
     @staticmethod
