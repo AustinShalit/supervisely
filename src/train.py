@@ -72,12 +72,11 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
         # We now have the pbtxt information so we can save it to file
         label_map = ''
         for label, i in self.class_title_to_idx.items():
-            label_map += f"item {{\n\nid: {i + 1}\n\nname: \"{label}\"\n}}\n\n"
+            label_map += f"item {{\n\tid: {i + 1}\n\tname: \"{label}\"\n}}\n\n"
 
         logger.info('Saving label map', extra={'label_map': label_map})
         with open(os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt'), 'w+') as pbtxt:
             pbtxt.write(label_map)
-        logger.info('Saved label map')
 
     @staticmethod
     def _determine_architecture_model_configuration(model_config_fpath):
