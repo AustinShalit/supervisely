@@ -69,6 +69,16 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
         super()._determine_model_classes_detection()
         self._determine_model_configuration()
 
+        # We now have the pbtxt information so we can save it to file
+        label_map = ''
+        for label, i in enumerate(self.class_title_to_idx):
+            label_map += "item {\n\nid: %s\n\nname: \"%s\"\n}\n\n" % (i + 1, label)
+
+        logger.info('Saving label map', extra=label_map)
+        with open(os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt'), 'w+') as pbtxt:
+            pbtxt.write(label_map)
+        logger.info('Saved label map')
+
     @staticmethod
     def _determine_architecture_model_configuration(model_config_fpath):
         if not sly.fs.file_exists(model_config_fpath):
@@ -118,7 +128,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             if len(samples_lst) < effective_batch_size:
                 raise RuntimeError(f'Not enough items in the {the_name!r} fold (tagged {the_tag!r}). There are only '
                                    f'{len(samples_lst)} items, but the effective batch size is {effective_batch_size} '
-                                   f'({num_gpu_devices} GPU devices X {single_gpu_batch_size} single GPU vatch size).')
+                                   f'({num_gpu_devices} GPU devices X {single_gpu_batch_size} single GPU batch size).')
 
             self.iters_cnt[the_name] = len(samples_lst) // effective_batch_size
             logger.info('Prepared dataset.', extra={
