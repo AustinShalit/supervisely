@@ -74,7 +74,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
         for label, i in self.class_title_to_idx.items():
             label_map += f"item {{\n\nid: {i + 1}\n\nname: \"{label}\"\n}}\n\n"
 
-        logger.info('Saving label map', extra=label_map)
+        logger.info('Saving label map', extra={'label_map': label_map})
         with open(os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt'), 'w+') as pbtxt:
             pbtxt.write(label_map)
         logger.info('Saved label map')
