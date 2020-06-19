@@ -2,6 +2,7 @@
 import tensorflow as tf
 
 import numpy as np
+from object_detection.utils import dataset_util
 
 from tensorflow.python.framework import dtypes
 from object_detection.core import standard_fields as fields
@@ -40,7 +41,40 @@ def load_ann(ann_fpath, classes_mapping, project_meta):
     classes = np.array(classes, dtype=np.int64)
     if num_boxes == 0:
         gt_boxes = np.reshape(gt_boxes, [0,4])
-    return gt_boxes, classes, np.array([num_boxes]).astype(np.int32)[0]
+    return gt_boxes, classes, classes_text
+
+
+def create_tf_example(sample, classes_mapping, project_meta):
+    img_filepath, ann_filepath = sample[0], sample[1]
+    image = sly_image.read(img_filepath.decode('utf-8'))
+    annotation = load_ann(ann_filepath, classes_mapping, project_meta)
+
+    width, height = image.size
+
+    filename = img_filepath
+    image_format = b'jpg'
+    xmins = [row[1] for row in annotation[0]]
+    xmaxs = [row[3] for row in annotation[0]]
+    ymins = [row[0] for row in annotation[0]]
+    ymaxs = [row[2] for row in annotation[0]]
+    classes_text = annotation[2]
+    classes = annotation[1]
+
+    tf_example = tf.train.Example(features=tf.train.Features(feature={
+        'image/height': dataset_util.int64_feature(height),
+        'image/width': dataset_util.int64_feature(width),
+        'image/filename': dataset_util.bytes_feature(filename),
+        'image/source_id': dataset_util.bytes_feature(filename),
+        'image/encoded': dataset_util.bytes_feature(image),
+        'image/format': dataset_util.bytes_feature(image_format),
+        'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
+        'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
+        'image/object/bbox/ymin': dataset_util.float_list_feature(ymins),
+        'image/object/bbox/ymax': dataset_util.float_list_feature(ymaxs),
+        'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
+        'image/object/class/label': dataset_util.int64_list_feature(classes),
+    }))
+    return tf_example
 
 
 def read_supervisely_data(sample, classes_mapping, project_meta):
@@ -78,3 +112,6 @@ def build_dataset(data_dict):
                                      project_meta=data_dict['project_meta'])
     tensor_dataset = samples_dataset.map(sup_decod_fn, num_parallel_calls=1)
     return tensor_dataset.prefetch(1)
+
+def save_supervisely_dataset_to_record():
+

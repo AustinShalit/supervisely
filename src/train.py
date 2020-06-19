@@ -16,6 +16,7 @@ from supervisely_lib.nn.hosted.constants import SETTINGS
 from supervisely_lib.nn.hosted.class_indexing import TRANSFER_LEARNING
 from supervisely_lib.nn.hosted.trainer import SuperviselyModelTrainer
 
+from dataset_tools import read_supervisely_data
 from tf_config_converter import load_sample_config, save_config, determine_tf_config
 
 import config as config_lib
@@ -26,6 +27,7 @@ from object_detection import model_hparams
 from object_detection import model_lib
 
 LABEL_MAP_PATH = os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt')
+RECORDS_DIR = os.path.join(sly.TaskPaths.TASK_DIR, 'records')
 
 
 class ObjectDetectionTrainer(SuperviselyModelTrainer):
@@ -135,8 +137,16 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
 
             self.iters_cnt[the_name] = len(samples_lst) // effective_batch_size
             logger.info('Prepared dataset.', extra={
-                'dataset_purpose': the_name, 'dataset_tag': the_tag, 'sample_cnt': len(samples_lst), 'samples': samples_lst
+                'dataset_purpose': the_name, 'dataset_tag': the_tag, 'sample_cnt': len(samples_lst)
             })
+
+            logger.info('Writing TF Record to file.')
+            writer = tf.python_io.TFRecordWriter(os.path.join(RECORDS_DIR, the_name))
+            for sample in samples_lst:
+                tf_example = read_supervisely_data(sample, self.class_title_to_idx, self.project.meta)
+                writer.write(tf_example.SerializeToString())
+            writer.close()
+
 
     def _construct_and_fill_model(self):
         self._make_tf_train_config()
