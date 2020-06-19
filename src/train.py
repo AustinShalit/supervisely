@@ -201,7 +201,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
         #     self.sess = sess
         #     self._save_model_snapshot(is_best, opt_data)
 
-        config = tf.estimator.RunConfig(model_dir=sly.TaskPaths.MODEL_DIR)
+        config = tf.estimator.RunConfig(model_dir=sly.TaskPaths.RESULTS_DIR)
 
         tf_model_config_path = osp.join(sly.TaskPaths.TASK_DIR, 'model.config')
         save_config(tf_model_config_path, self.tf_config)
