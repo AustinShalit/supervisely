@@ -46,7 +46,7 @@ def load_ann(ann_fpath, classes_mapping, project_meta):
 
 def create_tf_example(sample, classes_mapping, project_meta):
     img_filepath, ann_filepath = sample[0], sample[1]
-    image = sly_image.read(img_filepath.decode('utf-8'))
+    image = sly_image.read(img_filepath)
     annotation = load_ann(ann_filepath, classes_mapping, project_meta)
 
     width, height = image.size
