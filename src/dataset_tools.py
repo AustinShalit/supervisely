@@ -112,6 +112,3 @@ def build_dataset(data_dict):
                                      project_meta=data_dict['project_meta'])
     tensor_dataset = samples_dataset.map(sup_decod_fn, num_parallel_calls=1)
     return tensor_dataset.prefetch(1)
-
-def save_supervisely_dataset_to_record():
-
