@@ -49,7 +49,7 @@ def create_tf_example(sample, classes_mapping, project_meta):
     image = sly_image.read(img_filepath)
     annotation = load_ann(ann_filepath, classes_mapping, project_meta)
 
-    width, height = image.size
+    width, height, channels = image.shape
 
     filename = img_filepath
     image_format = b'jpg'
