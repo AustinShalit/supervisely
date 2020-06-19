@@ -52,7 +52,7 @@ def create_tf_example(sample, classes_mapping, project_meta):
 
     width, height, channels = image.shape
 
-    filename = img_filepath
+    filename = img_filepath.encode('utf8')
     image_format = b'jpg'
     xmins = [row[1] for row in annotation[0]]
     xmaxs = [row[3] for row in annotation[0]]
@@ -64,8 +64,8 @@ def create_tf_example(sample, classes_mapping, project_meta):
     tf_example = tf.train.Example(features=tf.train.Features(feature={
         'image/height': dataset_util.int64_feature(height),
         'image/width': dataset_util.int64_feature(width),
-        'image/filename': dataset_util.bytes_feature([filename]),
-        'image/source_id': dataset_util.bytes_feature([filename]),
+        'image/filename': dataset_util.bytes_feature(filename),
+        'image/source_id': dataset_util.bytes_feature(filename),
         'image/encoded': dataset_util.bytes_feature(image),
         'image/format': dataset_util.bytes_feature(image_format),
         'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
