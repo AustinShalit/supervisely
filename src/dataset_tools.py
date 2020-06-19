@@ -4,7 +4,7 @@ import io
 import tensorflow as tf
 
 import numpy as np
-from PIL.Image import Image
+import PIL.Image
 from object_detection.utils import dataset_util
 
 from tensorflow.python.framework import dtypes
@@ -53,7 +53,7 @@ def create_tf_example(sample, classes_mapping, project_meta):
     with tf.gfile.GFile(img_filepath, 'rb') as fid:
         encoded_jpg = fid.read()
     encoded_jpg_io = io.BytesIO(encoded_jpg)
-    image = Image.open(encoded_jpg_io)
+    image = PIL.Image.open(encoded_jpg_io)
     width, height = image.size
 
     image = sly_image.read(img_filepath)
