@@ -17,7 +17,7 @@ from supervisely_lib.nn.hosted.constants import SETTINGS
 from supervisely_lib.nn.hosted.class_indexing import TRANSFER_LEARNING
 from supervisely_lib.nn.hosted.trainer import SuperviselyModelTrainer
 
-from dataset_tools import read_supervisely_data
+from dataset_tools import create_tf_example
 from tf_config_converter import load_sample_config, save_config, determine_tf_config
 
 import config as config_lib
@@ -147,7 +147,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             logger.info('Writing TF Record to file.', extra={'path': record_path})
             writer = tf.io.TFRecordWriter(record_path)
             for sample in samples_lst:
-                tf_example = read_supervisely_data(sample, self.class_title_to_idx, self.project.meta)
+                tf_example = create_tf_example(sample, self.class_title_to_idx, self.project.meta)
                 writer.write(tf_example.SerializeToString())
             writer.close()
 
