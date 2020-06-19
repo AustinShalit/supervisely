@@ -111,6 +111,8 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
         self.out_config['model_configuration'] = self.model_configuration
 
     def _construct_data_loaders(self):
+        # This does not actually construct data loaders. Tensorflow will handle that for us. We are going to convert
+        # the supervise.ly data from supervisely to tfrecords that way we do not need to edit the tensorflow script.
         self.tf_data_dicts = {}
         self.iters_cnt = {}
         for the_name, the_tag in self.name_to_tag.items():
@@ -133,7 +135,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
 
             self.iters_cnt[the_name] = len(samples_lst) // effective_batch_size
             logger.info('Prepared dataset.', extra={
-                'dataset_purpose': the_name, 'dataset_tag': the_tag, 'sample_cnt': len(samples_lst)
+                'dataset_purpose': the_name, 'dataset_tag': the_tag, 'sample_cnt': len(samples_lst), 'samples': samples_lst
             })
 
     def _construct_and_fill_model(self):
