@@ -1,8 +1,10 @@
 # coding: utf-8
+import io
 
 import tensorflow as tf
 
 import numpy as np
+from PIL.Image import Image
 from object_detection.utils import dataset_util
 
 from tensorflow.python.framework import dtypes
@@ -47,10 +49,15 @@ def load_ann(ann_fpath, classes_mapping, project_meta):
 
 def create_tf_example(sample, classes_mapping, project_meta):
     img_filepath, ann_filepath = sample[0], sample[1]
+
+    with tf.gfile.GFile(img_filepath, 'rb') as fid:
+        encoded_jpg = fid.read()
+    encoded_jpg_io = io.BytesIO(encoded_jpg)
+    image = Image.open(encoded_jpg_io)
+    width, height = image.size
+
     image = sly_image.read(img_filepath)
     annotation = load_ann(ann_filepath, classes_mapping, project_meta)
-
-    width, height, channels = image.shape
 
     filename = img_filepath.encode('utf8')
     image_format = b'jpg'
@@ -66,7 +73,7 @@ def create_tf_example(sample, classes_mapping, project_meta):
         'image/width': dataset_util.int64_feature(width),
         'image/filename': dataset_util.bytes_feature(filename),
         'image/source_id': dataset_util.bytes_feature(filename),
-        'image/encoded': dataset_util.bytes_feature(image),
+        'image/encoded': dataset_util.bytes_feature(encoded_jpg),
         'image/format': dataset_util.bytes_feature(image_format),
         'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
         'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
