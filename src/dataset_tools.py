@@ -1,4 +1,6 @@
 # coding: utf-8
+import os
+
 import tensorflow as tf
 
 import numpy as np
@@ -51,7 +53,7 @@ def create_tf_example(sample, classes_mapping, project_meta):
 
     width, height, channels = image.shape
 
-    filename = str.encode(img_filepath)
+    filename = os.path.basename(img_filepath)
     image_format = b'jpg'
     xmins = [row[1] for row in annotation[0]]
     xmaxs = [row[3] for row in annotation[0]]
