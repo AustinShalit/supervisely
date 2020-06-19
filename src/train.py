@@ -4,6 +4,7 @@ import json
 
 import os
 import os.path as osp
+from pathlib import Path
 
 import cv2
 
@@ -140,8 +141,11 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
                 'dataset_purpose': the_name, 'dataset_tag': the_tag, 'sample_cnt': len(samples_lst)
             })
 
-            logger.info('Writing TF Record to file.')
-            writer = tf.io.TFRecordWriter(os.path.join(RECORDS_DIR, f'{the_name}.record'))
+            record_path = os.path.join(RECORDS_DIR, f'{the_name}.record')
+            Path(os.path.dirname(record_path)).mkdir(parents=True, exist_ok=True)
+
+            logger.info('Writing TF Record to file.', extra={'path': record_path})
+            writer = tf.io.TFRecordWriter(record_path)
             for sample in samples_lst:
                 tf_example = read_supervisely_data(sample, self.class_title_to_idx, self.project.meta)
                 writer.write(tf_example.SerializeToString())
