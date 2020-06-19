@@ -141,7 +141,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             })
 
             logger.info('Writing TF Record to file.')
-            writer = tf.python_io.TFRecordWriter(os.path.join(RECORDS_DIR, the_name))
+            writer = tf.io.TFRecordWriter(os.path.join(RECORDS_DIR, f'{the_name}.record'))
             for sample in samples_lst:
                 tf_example = read_supervisely_data(sample, self.class_title_to_idx, self.project.meta)
                 writer.write(tf_example.SerializeToString())
