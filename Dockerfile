@@ -41,6 +41,8 @@ RUN git clone https://github.com/tensorflow/models.git /tensorflow/models && \
 RUN cd /tensorflow/models/research && \
     protoc object_detection/protos/*.proto --python_out=.
 
+RUN cd /tensorflow/models/research/ && python setup.py build
+
 ENV PYTHONPATH $PYTHONPATH:/tensorflow/models/research:/tensorflow/models/research/slim
 
 ENV LANG C.UTF-8
