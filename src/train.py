@@ -230,8 +230,18 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             """
             Hook that logs the current step to Supervise.ly
             """
+            def __init__(self, total):
+                self.logger = logger
+                self.total = total
+
             def begin(self):
                 self._global_step_tensor = training_util._get_or_create_global_step_read()
+                self.logger.info('progress', extra={
+                    'event_type': EventType.PROGRESS,
+                    'subtask': 'Model training: ',
+                    'current': 0,
+                    'total': self.total
+                })
                 if self._global_step_tensor is None:
                     raise RuntimeError("Global step should be created to use StopAtStepHook.")
 
@@ -241,12 +251,13 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
                     'event_type': EventType.PROGRESS,
                     'subtask': 'Model training: ',
                     'current': step,
-                    'total': self.config['epochs'] * self.train_iters
+                    'total': self.total
                 })
 
+        step_logger = StepLogger(self.config['epochs'] * self.train_iters)
         # Override train_spec with hook
         train_spec = tf.estimator.TrainSpec(
-            input_fn=train_input_fn, max_steps=train_steps, hooks=[StepLogger()])
+            input_fn=train_input_fn, max_steps=train_steps, hooks=[step_logger])
 
         logger.info('Calling tf.estimator.train_and_evaluate')
         tf.estimator.train_and_evaluate(estimator, train_spec, eval_specs[0])
