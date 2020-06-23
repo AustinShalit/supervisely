@@ -244,7 +244,7 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
                     'total': self.config['epochs'] * self.train_iters
                 })
 
-        train_spec.hooks.append(StepLogger())
+        train_spec.hooks = tuple(list(train_spec.hooks).append(StepLogger()))
 
         logger.info('Calling tf.estimator.train_and_evaluate')
         tf.estimator.train_and_evaluate(estimator, train_spec, eval_specs[0])
