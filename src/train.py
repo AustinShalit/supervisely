@@ -8,6 +8,10 @@ from pathlib import Path
 
 import cv2
 
+import tensorflow as tf
+
+from object_detection import model_hparams, model_lib
+
 import supervisely_lib as sly
 import supervisely_lib.nn.dataset
 from supervisely_lib import logger, EventType
@@ -22,10 +26,6 @@ from dataset_tools import create_tf_example
 from tf_config_converter import load_sample_config, save_config, determine_tf_config
 
 import config as config_lib
-
-import tensorflow as tf
-
-from object_detection import model_hparams, model_lib
 
 LABEL_MAP_PATH = os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt')
 RECORDS_DIR = os.path.join(sly.TaskPaths.TASK_DIR, 'records')
