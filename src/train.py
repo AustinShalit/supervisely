@@ -14,18 +14,18 @@ from object_detection import model_hparams, model_lib
 
 import supervisely_lib as sly
 import supervisely_lib.nn.dataset
-from supervisely_lib import logger, EventType
+from supervisely_lib import logger
 from supervisely_lib import sly_logger
 from supervisely_lib.nn.config import JsonConfigValidator
 from supervisely_lib.nn.hosted.constants import SETTINGS
 from supervisely_lib.nn.hosted.class_indexing import TRANSFER_LEARNING
 from supervisely_lib.nn.hosted.trainer import SuperviselyModelTrainer
-from tensorflow_core.python.training import training_util
 
 from dataset_tools import create_tf_example
 from tf_config_converter import load_sample_config, save_config, determine_tf_config
 
 import config as config_lib
+from hooks import StepLogger
 
 LABEL_MAP_PATH = os.path.join(sly.TaskPaths.TASK_DIR, 'map.pbtxt')
 RECORDS_DIR = os.path.join(sly.TaskPaths.TASK_DIR, 'records')
@@ -151,7 +151,6 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
                 writer.write(tf_example.SerializeToString())
             writer.close()
 
-
     def _construct_and_fill_model(self):
         self._make_tf_train_config()
 
@@ -225,34 +224,6 @@ class ObjectDetectionTrainer(SuperviselyModelTrainer):
             eval_on_train_input_fn,
             predict_input_fn,
             train_steps)
-
-        class StepLogger(tf.train.SessionRunHook):
-            """
-            Hook that logs the current step to Supervise.ly
-            """
-            def __init__(self, total):
-                self.logger = logger
-                self.total = total
-
-            def begin(self):
-                self._global_step_tensor = training_util._get_or_create_global_step_read()
-                self.logger.info('progress', extra={
-                    'event_type': EventType.PROGRESS,
-                    'subtask': 'Model training: ',
-                    'current': 0,
-                    'total': self.total
-                })
-                if self._global_step_tensor is None:
-                    raise RuntimeError("Global step should be created to use StopAtStepHook.")
-
-            def after_run(self, run_context, run_values):
-                step = run_context.session.run(self._global_step_tensor)
-                self.logger.info('progress', extra={
-                    'event_type': EventType.PROGRESS,
-                    'subtask': 'Model training: ',
-                    'current': step,
-                    'total': self.total
-                })
 
         step_logger = StepLogger(self.config['epochs'] * self.train_iters)
         # Override train_spec with hook
